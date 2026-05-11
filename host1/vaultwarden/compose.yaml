@@ -1,0 +1,44 @@
+services:
+  vaultwarden:
+    image: vaultwarden/server:1.35.4
+    container_name: vaultwarden
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${ROOT}/data:/data:rw
+    networks:
+      - traefik_proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vaultwarden.rule=Host(`${URL}`)"
+      - "traefik.http.routers.vaultwarden.entrypoints=websecure"
+      - "traefik.http.routers.vaultwarden.tls.certresolver=<RESOLVER>"
+      - "traefik.http.services.vaultwarden.loadbalancer.server.port=${PORT}"
+      - "traefik.http.routers.vaultwarden.middlewares=secure-headers@file"
+      - traefik.http.routers.vaultwarden.tls=true
+    env_file:
+      - ${ROOT}/.env
+
+  vw_backup:
+    image: bruceforce/vaultwarden-backup:latest
+    container_name: vaultwarden-backup
+    networks:
+      - traefik_proxy
+    restart: on-failure
+    volumes:
+      - ${ROOT}/data:/data
+      - ${ROOT}/backup:/backup
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      # BACKUP_USE_DEDUPE: true
+      BACKUP_ON_STARTUP: true
+      DELETE_AFTER: 30
+      CRON_TIME: 0 * * * *
+      TIMESTAMP: true
+      UID: 0
+      GID: 0
+
+networks:
+  traefik_proxy:
+    external: true
