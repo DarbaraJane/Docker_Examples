@@ -1,0 +1,23 @@
+services:
+  omni-tools:
+    image: iib0011/omni-tools:latest
+    container_name: omni-tools
+    restart: unless-stopped
+    networks:
+      - traefik_proxy
+    ports:
+      - "4000:80"
+    #volumes:
+    #  - ${ROOT}:/
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.omni-tools.rule=Host(`${URL}`)"
+      - "traefik.http.routers.omni-tools.entrypoints=websecure"
+      - "traefik.http.routers.omni-tools.tls.certresolver=<RESOLVER>"
+      - "traefik.http.services.omni-tools.loadbalancer.server.port=${PORT}"
+      - "traefik.http.routers.omni-tools.middlewares=secure-headers@file"
+
+networks:
+   traefik_proxy:
+    name: traefik_proxy
+    external: true
