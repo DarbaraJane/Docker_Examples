@@ -1,0 +1,34 @@
+networks:
+  proxy:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.0.0/16
+
+services:
+  reverse-proxy:
+    image: traefik:latest
+    networks:
+      - proxy                                  #latest official traefik image
+    ports: 
+    - "80:80"
+    - "3000:8080"                                          #webUI
+    - "443:443"
+    environment:
+      - CF_DNS_API_TOKEN=${API_TOKEN}  
+      - TZ=America/New_York                        #DNS API token
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock:ro             #Listening to docker
+    - ${ROOT}/traefik/:/etc/traefik/:ro                        #traefik configuration files
+    - ${ROOT}/letsencrypt/:/letsencrypt/                    #letsencrypt storage
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.dashboard.middlewares=test-auth@file"   #basic auth middleware
+      - "traefik.http.routers.dashboard.rule=Host(`${URL}`)"
+      - "traefik.http.routers.dashboard.entrypoints=websecure"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.tls=true"
+      - "traefik.http.routers.dashboard.tls.certresolver=<RESOLVER>"
+
