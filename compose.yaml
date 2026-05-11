@@ -1,34 +1,19 @@
 services:
-  checkmk :
-    image: checkmk/check-mk-raw:latest
-    container_name: checkmk
-    restart: always
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflare
+    restart: unless-stopped
     networks:
       - traefik_proxy
-    #network_mode: host
-    environment:
-      - CMK_PASSWORD=${cmkpass}
-      - TZ=America/Halifax
-
-    volumes:
-      - ${ROOT}/data:/omd/sites
-      - /var/run/docker.sock:/var/run/docker.sock
-
+    command: --no-autoupdate tunnel run --token ${CLOUDFLARE_TUNNEL_TOKEN} --protocol http2
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.monitoring.rule=Host(`${URL}`)"
-      - "traefik.http.routers.monitoring.entrypoints=websecure"
-      - "traefik.http.routers.monitoring.tls.certresolver=<RESOLVER>"
-      - "traefik.http.services.monitoring.loadbalancer.server.port=${PORT}"
-      #- "traefik.http.services.monitoring.loadbalancer.server.url=https://127.0.0.1:${PORT}/cmk/"
+      - "traefik.http.routers.cloudflare.rule=Host(`${URL}`)"
+      - "traefik.http.routers.cloudflare.entrypoints=websecure"
+      - "traefik.http.routers.cloudflare.tls.certresolver=<RESOLVER>"
+      - "traefik.http.services.cloudflare.loadbalancer.server.port=${PORT}"
 
 networks:
-  traefik_proxy:
+   traefik_proxy:
     name: traefik_proxy
     external: true
-  monitor_net:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.24.11.0
-  
