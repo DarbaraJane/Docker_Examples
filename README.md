@@ -6,7 +6,7 @@ We will have two docker hosts currently existing in parallel, Charlie and Vaggie
 
 
 ## Host 1
-This exists on the proxmox host adminnode.
+This exists on original the proxmox host.
 
 - IP Address: <Address>
 - Memory: 11.72 GB
@@ -29,8 +29,8 @@ This exists on the proxmox host adminnode.
 - zammad-docker-compose
     - Legacy from demo for potential ticketing solution
 
-## Host 2- Vaggie
-To be installed on Second host
+## Host 2- 
+To be installed on second proxmox host
 
 ### Containerss
 - cloudflare
