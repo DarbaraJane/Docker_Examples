@@ -1,0 +1,34 @@
+[providers.docker]
+  endpoint = "unix:///var/run/docker.sock"
+  network = "proxy"
+  watch = true
+
+[providers.file]
+  directory = "/etc/traefik/dynamic"
+  watch = true
+[entryPoints]
+  [entryPoints.web]
+    address = ":80"
+      [entryPoints.web.http.redirections.entryPoint]
+        to = "websecure"
+        scheme = "https"
+        permanent = true
+
+  [entryPoints.websecure]
+    address = ":443"
+    [entryPoints.websecure.http.tls]
+
+[api]
+  #insecure = true
+  dashboard = true
+
+[certificatesResolvers.<RESOLVER>.acme]
+  email = "<email>"
+  storage = "/letsencrypt/acme.json"
+  [certificatesResolvers.<RESOLVER>.acme.dnsChallenge]
+    provider = "cloudflare"
+    resolvers = ["1.1.1.1:53", "8.8.8.8:53"]
+
+[log]
+  level = "DEBUG"
+  format = "common"
